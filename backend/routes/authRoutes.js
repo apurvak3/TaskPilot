@@ -1,44 +1,11 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/userModel");
+import express from "express";
+import { Register, Login } from "../controllers/authController.js";  
 
-const router = express.Router();
-const SECRET_KEY = "your_secret_key"; 
+export const router = express.Router();
 
-// ✅ Register User
-router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "Email already exists!" });
+// Fix incorrect route paths
+router.post("/register", Register);
+router.post("/login", Login);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
+export default router; // ✅ Export router properly
 
-    const token = jwt.sign({ id: newUser._id }, SECRET_KEY, { expiresIn: "1h" });
-    res.status(201).json({ token });
-  } catch (err) {
-    res.status(500).json({ message: "Error registering user!" });
-  }
-});
-
-// ✅ Login User
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found!" });
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) return res.status(400).json({ message: "Invalid password!" });
-
-    const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "1h" });
-    res.json({ token });
-  } catch (err) {
-    res.status(500).json({ message: "Error logging in!" });
-  }
-});
-
-module.exports = router;

@@ -1,17 +1,17 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors"; 
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import { connectDB } from "./data/database.js";
 
-const authRoutes = require("./routes/authRoutes");
 
+dotenv.config();
 const app = express();
+
 app.use(express.json());
 app.use(cors());
+connectDB();
+app.use("/auth", authRoutes);
 
-mongoose.connect("mongodb://localhost:27017/taskpilot", { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
-
-app.use("/api", authRoutes);
-
-app.listen(3000, () => console.log("Server running on port 3000"));
+app.listen(process.env.PORT || 5000, () => console.log(`Server running on port ${PORT}`));
